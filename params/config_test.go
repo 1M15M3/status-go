@@ -342,13 +342,15 @@ func TestNodeConfigValidate(t *testing.T) {
 			Config: `{
 				"NetworkId": 1,
 				"DataDir": "/some/dir",
-				"PFSEnabled": true,
-				"BackupDisabledDataDir": "/some/dir",
 				"KeyStoreDir": "/some/dir",
 				"NoDiscovery": true,
 				"WhisperConfig": {
 					"Enabled": true,
 					"DataDir": "/foo"
+				},
+				"ShhextConfig": {
+					"BackupDisabledDataDir": "/some/dir",
+					"PFSEnabled": true
 				}
 			}`,
 			Error: "PFSEnabled is true, but InstallationID is empty",
