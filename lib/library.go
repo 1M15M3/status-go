@@ -323,6 +323,14 @@ func Login(address, password *C.char) *C.char {
 	return makeJSONResponse(err)
 }
 
+//LoginDecoupled loads a key file for the wallet address, and another one for the chat address. It tries to decrypt it using the password, to verify ownership
+// if verified, purges all the previous identities from Whisper, and injects verified key as shh identity
+//export LoginDecoupled
+func LoginDecoupled(walletAddress, chatAddress, password *C.char) *C.char {
+	err := statusBackend.SelectAccount(C.GoString(walletAddress), C.GoString(chatAddress), C.GoString(password))
+	return makeJSONResponse(err)
+}
+
 //Logout is equivalent to clearing whisper identities
 //export Logout
 func Logout() *C.char {
