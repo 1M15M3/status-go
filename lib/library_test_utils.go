@@ -378,7 +378,7 @@ func testCreateChildAccount(t *testing.T) bool { //nolint: gocyclo
 		t.Errorf("could not create account: %s", err)
 		return false
 	}
-	walletAddress, walletPubKey, chatAddress, _, mnemonic := createAccountResponse.Address, createAccountResponse.PubKey,
+	walletAddress, walletPubKey, chatAddress, _, mnemonic := createAccountResponse.WalletAddress, createAccountResponse.WalletPubKey,
 		createAccountResponse.ChatAddress, createAccountResponse.ChatPubKey, createAccountResponse.Mnemonic
 	t.Logf("Account created: {address: %s, key: %s, mnemonic:%s}", walletAddress, walletPubKey, mnemonic)
 
@@ -461,14 +461,14 @@ func testCreateChildAccount(t *testing.T) bool { //nolint: gocyclo
 		t.Errorf("cannot create sub-account: %v", createSubAccountResponse2.Error)
 	}
 
-	if createSubAccountResponse1.Address == createSubAccountResponse2.Address || createSubAccountResponse1.PubKey == createSubAccountResponse2.PubKey {
+	if createSubAccountResponse1.WalletAddress == createSubAccountResponse2.WalletAddress || createSubAccountResponse1.WalletPubKey == createSubAccountResponse2.WalletPubKey {
 		t.Error("sub-account index auto-increament failed")
 		return false
 	}
 
 	// create sub-account (from explicit parent)
 	createSubAccountResponse3 := AccountInfo{}
-	rawResponse = CreateChildAccount(C.CString(createSubAccountResponse2.Address), C.CString(TestConfig.Account1.Password))
+	rawResponse = CreateChildAccount(C.CString(createSubAccountResponse2.WalletAddress), C.CString(TestConfig.Account1.Password))
 
 	if err := json.Unmarshal([]byte(C.GoString(rawResponse)), &createSubAccountResponse3); err != nil {
 		t.Errorf("cannot decode CreateChildAccount response (%s): %v", C.GoString(rawResponse), err)
@@ -479,8 +479,8 @@ func testCreateChildAccount(t *testing.T) bool { //nolint: gocyclo
 		t.Errorf("cannot create sub-account: %v", createSubAccountResponse3.Error)
 	}
 
-	subAccount1, subAccount2, subAccount3 := createSubAccountResponse1.Address, createSubAccountResponse2.Address, createSubAccountResponse3.Address
-	subPubKey1, subPubKey2, subPubKey3 := createSubAccountResponse1.PubKey, createSubAccountResponse2.PubKey, createSubAccountResponse3.PubKey
+	subAccount1, subAccount2, subAccount3 := createSubAccountResponse1.WalletAddress, createSubAccountResponse2.WalletAddress, createSubAccountResponse3.WalletAddress
+	subPubKey1, subPubKey2, subPubKey3 := createSubAccountResponse1.WalletPubKey, createSubAccountResponse2.WalletPubKey, createSubAccountResponse3.WalletPubKey
 
 	if subAccount1 == subAccount3 || subPubKey1 == subPubKey3 || subAccount2 == subAccount3 || subPubKey2 == subPubKey3 {
 		t.Error("sub-account index auto-increament failed")
@@ -514,7 +514,7 @@ func testRecoverAccount(t *testing.T) bool { //nolint: gocyclo
 		t.Errorf("recover account failed: %v", recoverAccountResponse.Error)
 		return false
 	}
-	walletAddressCheck, walletPubKeyCheck := recoverAccountResponse.Address, recoverAccountResponse.PubKey
+	walletAddressCheck, walletPubKeyCheck := recoverAccountResponse.WalletAddress, recoverAccountResponse.WalletPubKey
 	chatAddressCheck, chatPubKeyCheck := recoverAccountResponse.ChatAddress, recoverAccountResponse.ChatPubKey
 
 	if accountInfo.WalletAddress != walletAddressCheck || accountInfo.WalletPubKey != walletPubKeyCheck {
@@ -554,7 +554,7 @@ func testRecoverAccount(t *testing.T) bool { //nolint: gocyclo
 		t.Errorf("recover account failed (for non-cached account): %v", recoverAccountResponse.Error)
 		return false
 	}
-	walletAddressCheck, walletPubKeyCheck = recoverAccountResponse.Address, recoverAccountResponse.PubKey
+	walletAddressCheck, walletPubKeyCheck = recoverAccountResponse.WalletAddress, recoverAccountResponse.WalletPubKey
 	if accountInfo.WalletAddress != walletAddressCheck || accountInfo.WalletPubKey != walletPubKeyCheck {
 		t.Error("recover wallet account details failed to pull the correct details (for non-cached account)")
 	}
@@ -587,7 +587,7 @@ func testRecoverAccount(t *testing.T) bool { //nolint: gocyclo
 		t.Errorf("recover account failed (for non-cached account): %v", recoverAccountResponse.Error)
 		return false
 	}
-	walletAddressCheck, walletPubKeyCheck = recoverAccountResponse.Address, recoverAccountResponse.PubKey
+	walletAddressCheck, walletPubKeyCheck = recoverAccountResponse.WalletAddress, recoverAccountResponse.WalletPubKey
 	if accountInfo.WalletAddress != walletAddressCheck || accountInfo.WalletPubKey != walletPubKeyCheck {
 		t.Error("recover wallet account details failed to pull the correct details (for non-cached account)")
 	}
