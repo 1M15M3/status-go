@@ -178,7 +178,18 @@ func (api *PublicAPI) getPeer(rawurl string) (*enode.Node, error) {
 }
 
 // RequestMessages sends a request for historic messages to a MailServer.
-func (api *PublicAPI) RequestMessages(_ context.Context, r MessagesRequest) (hexutil.Bytes, error) {
+func (api *PublicAPI) RequestMessages(ctx context.Context, r MessagesRequest) (hexutil.Bytes, error) {
+	return api.requestMessages(ctx, r, false)
+}
+
+// SafeRequestMessages provides same functionality as RequestMessages. But if similar request was made within
+// configured delay an error will be returned.
+func (api *PublicAPI) SafeRequestMessages(ctx context.Context, r MessagesRequest) (hexutil.Bytes, error) {
+	return api.requestMessages(ctx, r, true)
+}
+
+// RequestMessages sends a request for historic messages to a MailServer.
+func (api *PublicAPI) requestMessages(_ context.Context, r MessagesRequest, ensureDelay bool) (hexutil.Bytes, error) {
 	api.log.Info("RequestMessages", "request", r)
 	shh := api.service.w
 	now := api.service.w.GetCurrentTime()
@@ -223,11 +234,17 @@ func (api *PublicAPI) RequestMessages(_ context.Context, r MessagesRequest) (hex
 	if err != nil {
 		return nil, err
 	}
+	hash := envelope.Hash()
+	if ensureDelay {
+		err = api.service.requestsRegistry.Register(hash, r.Topics)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	if err := shh.RequestHistoricMessagesWithTimeout(mailServerNode.ID().Bytes(), envelope, r.Timeout*time.Second); err != nil {
 		return nil, err
 	}
-	hash := envelope.Hash()
 	return hash[:], nil
 }
 
